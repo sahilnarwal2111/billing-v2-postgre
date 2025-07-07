@@ -61,4 +61,32 @@ router.post('/signup', function (req, res) {
         });
     });
 });
+router.post('/login', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const body = req.body;
+    const { success, error } = zodValidation_1.loginSchema.safeParse(body);
+    if (!success) {
+        return res.status(411).json({ msg: "Invalid Inputs !", errors: error.errors });
+    }
+    // checking whether this already exists or not !
+    const existingUser = yield prisma.user.findFirst({
+        where: {
+            email: body.email
+        }
+    });
+    if (!existingUser) {
+        return res.status(411).json({ msg: "User not found" });
+    }
+    const isMatch = (0, bcrypt_ts_1.compareSync)(body.password, existingUser.password);
+    if (!isMatch) {
+        return res.status(411).json({ msg: "Incorrect password " });
+    }
+    const UserId = existingUser.id;
+    const token = jsonwebtoken_1.default.sign({
+        id: UserId, email: req.body.email
+    }, jwtSecret);
+    return res.status(200).json({
+        msg: "Login Successfully !",
+        token: token
+    });
+}));
 exports.default = router;

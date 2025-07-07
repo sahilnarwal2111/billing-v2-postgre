@@ -1,7 +1,7 @@
 import express, { Request, Response } from 'express'
 import { PrismaClient } from '../../generated/prisma'
 import { signupSchema, loginSchema } from '../zodValidation';
-import { genSaltSync, hashSync } from "bcrypt-ts";
+import { genSaltSync, hashSync, compareSync } from "bcrypt-ts";
 import jwt, { Secret, JwtPayload } from 'jsonwebtoken';
 import dotenv  from 'dotenv';
 
@@ -56,6 +56,42 @@ router.post('/signup', async function (req: Request, res: Response): Promise<Res
         token : token
     })
     
+})
+
+router.post('/login', async (req, res) =>{
+    const body = req.body;
+    const { success, error} = loginSchema.safeParse(body);
+
+    if(!success){
+        return res.status(411).json({msg : "Invalid Inputs !", errors: error.errors })
+    }
+
+    // checking whether this already exists or not !
+    const existingUser = await prisma.user.findFirst({
+        where : {
+            email : body.email
+        }
+    })
+
+    if(!existingUser){
+        return res.status(411).json({msg : "User not found"})
+    }
+
+    const isMatch = compareSync(body.password, existingUser.password);
+
+    if(!isMatch){
+        return res.status(411).json({msg : "Incorrect password "})
+    }
+    const UserId = existingUser.id;
+    const token = jwt.sign({
+        id : UserId, email : req.body.email
+    }, jwtSecret)
+
+    return res.status(200).json({
+        msg : "Login Successfully !",
+        token : token
+    })
+
 })
 
 export default router
