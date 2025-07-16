@@ -139,7 +139,7 @@ router.post('/addOrganisation', authMiddleware, async (req, res) =>{
 router.get('/organisations', authMiddleware, async (req, res)=>{
     const userId = req.body.id;
 
-    const organisations = prisma.organisation.findMany({
+    const organisations = await prisma.organisation.findMany({
         where : {
             userId : userId
         }
