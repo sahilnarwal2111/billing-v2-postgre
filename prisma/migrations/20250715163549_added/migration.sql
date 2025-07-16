@@ -1,0 +1,5 @@
+-- AlterTable
+ALTER TABLE "Bill" ALTER COLUMN "amount" SET DATA TYPE DOUBLE PRECISION;
+
+-- AlterTable
+ALTER TABLE "User" ALTER COLUMN "lastName" DROP NOT NULL;

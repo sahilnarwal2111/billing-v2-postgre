@@ -1,9 +1,10 @@
 import express, { Request, Response } from 'express'
-import { PrismaClient } from '../../generated/prisma'
-import { signupSchema, loginSchema } from '../zodValidation';
+import { PrismaClient } from '@prisma/client'
+import { signupSchema, loginSchema, organisationSchema } from '../zodValidation';
 import { genSaltSync, hashSync, compareSync } from "bcrypt-ts";
-import jwt, { Secret, JwtPayload } from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
 import dotenv  from 'dotenv';
+import authMiddleware from '../middleware';
 
 
 const prisma = new PrismaClient();
@@ -92,6 +93,59 @@ router.post('/login', async (req, res) =>{
         token : token
     })
 
+})
+
+router.get('/profile', authMiddleware ,async (req, res) =>{
+    if(!req.body.email){
+        return res.status(411).json({msg : "please send an email"})
+    }
+    const user = await prisma.user.findFirst({
+        where : {
+            email : req.body.email
+        }
+    })
+
+    return res.status(200).json({user});
+
+})
+
+router.post('/addOrganisation', authMiddleware, async (req, res) =>{
+    const body = req.body;
+    const { success } = organisationSchema.safeParse(body);
+    if(!success){
+        return res.status(411).json({msg : "Organisation Inputs in API are wrong !"});
+    }   
+
+    const newOrg = await prisma.organisation.create({
+        data : {
+            name : body.name,
+            subHeading : body.subHeading,
+            contactNumber : body.contactNumber,
+            contactEmail : body.contactEmail ,
+            gstNumber : body.gstNumber,
+            address : body.address,
+            userId : req.body.id
+        
+        }
+    })
+
+    return res.status(201).json({
+        msg : "Organisation added successfully !",
+        newOrg : newOrg
+    })
+
+})
+
+router.get('/organisations', authMiddleware, async (req, res)=>{
+    const userId = req.body.id;
+
+    const organisations = prisma.organisation.findMany({
+        where : {
+            userId : userId
+        }
+    })
+
+    res.status(200).json({organisations})
 })
 
 export default router

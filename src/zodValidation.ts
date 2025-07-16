@@ -12,4 +12,23 @@ const loginSchema = zod.object({
     password : zod.string().min(5)
 })
 
-export {signupSchema, loginSchema}
+const billSchema = zod.object({
+    customerName : zod.string().min(4),
+    itemsPurchased : zod.array(zod.object({
+        itemName : zod.string(),
+        quantityPurchased : zod.number(),
+        priceOfItem : zod.number(),
+    })),
+    organisation : zod.number()
+})
+
+const organisationSchema = zod.object({
+    name : zod.string().min(4),
+    subHeading : zod.string().optional(),
+    contactNumber : zod.string(),
+    contactEmail : zod.string(),
+    gstNumber : zod.string(),
+    address : zod.string()
+})
+
+export {signupSchema, loginSchema, billSchema, organisationSchema}

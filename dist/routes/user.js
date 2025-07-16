@@ -13,12 +13,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
-const prisma_1 = require("../../generated/prisma");
+const client_1 = require("@prisma/client");
 const zodValidation_1 = require("../zodValidation");
 const bcrypt_ts_1 = require("bcrypt-ts");
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const dotenv_1 = __importDefault(require("dotenv"));
-const prisma = new prisma_1.PrismaClient();
+const middleware_1 = __importDefault(require("../middleware"));
+const prisma = new client_1.PrismaClient();
 const router = express_1.default.Router();
 dotenv_1.default.config();
 const jwtSecret = process.env.JWT_SECRET;
@@ -88,5 +89,47 @@ router.post('/login', (req, res) => __awaiter(void 0, void 0, void 0, function* 
         msg: "Login Successfully !",
         token: token
     });
+}));
+router.get('/profile', middleware_1.default, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    if (!req.body.email) {
+        return res.status(411).json({ msg: "please send an email" });
+    }
+    const user = yield prisma.user.findFirst({
+        where: {
+            email: req.body.email
+        }
+    });
+    return res.status(200).json({ user });
+}));
+router.post('/addOrganisation', middleware_1.default, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const body = req.body;
+    const { success } = zodValidation_1.organisationSchema.safeParse(body);
+    if (!success) {
+        return res.status(411).json({ msg: "Organisation Inputs in API are wrong !" });
+    }
+    const newOrg = yield prisma.organisation.create({
+        data: {
+            name: body.name,
+            subHeading: body.subHeading,
+            contactNumber: body.contactNumber,
+            contactEmail: body.contactEmail,
+            gstNumber: body.gstNumber,
+            address: body.address,
+            userId: req.body.id
+        }
+    });
+    return res.status(201).json({
+        msg: "Organisation added successfully !",
+        newOrg: newOrg
+    });
+}));
+router.get('/organisations', middleware_1.default, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const userId = req.body.id;
+    const organisations = prisma.organisation.findMany({
+        where: {
+            userId: userId
+        }
+    });
+    res.status(200).json({ organisations });
 }));
 exports.default = router;
