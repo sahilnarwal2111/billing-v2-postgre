@@ -98,4 +98,28 @@ router.post('/update', authMiddleware, async (req, res)=> {
         bill : updatedBill})
 })
 
+// need to make route in which a user can see all bills by orgranisation
+router.get('/bills/:organsiationId', authMiddleware, async (req, res)=>{
+    const orgId = parseInt(req.params.organsiationId);
+    if (isNaN(orgId)) {
+    return res.status(400).json({ msg: "Invalid organisation ID" });
+  }
+
+  try {
+    const bills = await prisma.bill.findMany({
+      where: {
+        createdBy: req.body.id,
+        organisationId: orgId
+      },
+      include: {
+        itemsPurchased: true
+      }
+    });
+
+    return res.status(200).json({ bills });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ msg: "Failed to fetch bills" });
+  }
+})
 export default router

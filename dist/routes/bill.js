@@ -98,4 +98,27 @@ router.post('/update', middleware_1.default, (req, res) => __awaiter(void 0, voi
         bill: updatedBill
     });
 }));
+// need to make route in which a user can see all bills by orgranisation
+router.get('/bills/:organsiationId', middleware_1.default, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const orgId = parseInt(req.params.organsiationId);
+    if (isNaN(orgId)) {
+        return res.status(400).json({ msg: "Invalid organisation ID" });
+    }
+    try {
+        const bills = yield prisma.bill.findMany({
+            where: {
+                createdBy: req.body.id,
+                organisationId: orgId
+            },
+            include: {
+                itemsPurchased: true
+            }
+        });
+        return res.status(200).json({ bills });
+    }
+    catch (err) {
+        console.error(err);
+        return res.status(500).json({ msg: "Failed to fetch bills" });
+    }
+}));
 exports.default = router;
