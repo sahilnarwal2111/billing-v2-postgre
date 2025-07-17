@@ -95,19 +95,6 @@ router.post('/login', async (req, res) =>{
 
 })
 
-router.get('/profile', authMiddleware ,async (req, res) =>{
-    if(!req.body.email){
-        return res.status(411).json({msg : "please send an email"})
-    }
-    const user = await prisma.user.findFirst({
-        where : {
-            email : req.body.email
-        }
-    })
-
-    return res.status(200).json({user});
-
-})
 
 router.post('/addOrganisation', authMiddleware, async (req, res) =>{
     const body = req.body;

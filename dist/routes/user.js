@@ -103,9 +103,9 @@ router.get('/profile', middleware_1.default, (req, res) => __awaiter(void 0, voi
 }));
 router.post('/addOrganisation', middleware_1.default, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const body = req.body;
-    const { success } = zodValidation_1.organisationSchema.safeParse(body);
+    const { success, error } = zodValidation_1.organisationSchema.safeParse(body);
     if (!success) {
-        return res.status(411).json({ msg: "Organisation Inputs in API are wrong !" });
+        return res.status(411).json({ msg: "Organisation Inputs in API are wrong ! " + error });
     }
     const newOrg = yield prisma.organisation.create({
         data: {
