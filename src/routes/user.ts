@@ -111,9 +111,9 @@ router.get('/profile', authMiddleware ,async (req, res) =>{
 
 router.post('/addOrganisation', authMiddleware, async (req, res) =>{
     const body = req.body;
-    const { success } = organisationSchema.safeParse(body);
+    const { success, error } = organisationSchema.safeParse(body);
     if(!success){
-        return res.status(411).json({msg : "Organisation Inputs in API are wrong !"});
+        return res.status(411).json({msg : "Organisation Inputs in API are wrong ! " + error});
     }   
 
     const newOrg = await prisma.organisation.create({

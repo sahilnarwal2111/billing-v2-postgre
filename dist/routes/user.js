@@ -125,7 +125,7 @@ router.post('/addOrganisation', middleware_1.default, (req, res) => __awaiter(vo
 }));
 router.get('/organisations', middleware_1.default, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const userId = req.body.id;
-    const organisations = prisma.organisation.findMany({
+    const organisations = yield prisma.organisation.findMany({
         where: {
             userId: userId
         }
